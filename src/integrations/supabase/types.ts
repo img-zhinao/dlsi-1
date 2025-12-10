@@ -14,16 +14,200 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      claims: {
+        Row: {
+          approved_amount: number | null
+          claimed_amount: number | null
+          created_at: string
+          deductible: number | null
+          id: string
+          invoice_amount: number
+          invoice_url: string | null
+          medical_insurance_amount: number | null
+          medical_record_url: string | null
+          payment_ratio: number | null
+          project_id: string
+          status: string | null
+          subject_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved_amount?: number | null
+          claimed_amount?: number | null
+          created_at?: string
+          deductible?: number | null
+          id?: string
+          invoice_amount: number
+          invoice_url?: string | null
+          medical_insurance_amount?: number | null
+          medical_record_url?: string | null
+          payment_ratio?: number | null
+          project_id: string
+          status?: string | null
+          subject_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved_amount?: number | null
+          claimed_amount?: number | null
+          created_at?: string
+          deductible?: number | null
+          id?: string
+          invoice_amount?: number
+          invoice_url?: string | null
+          medical_insurance_amount?: number | null
+          medical_record_url?: string | null
+          payment_ratio?: number | null
+          project_id?: string
+          status?: string | null
+          subject_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "claims_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          company_name: string | null
+          contact_name: string | null
+          created_at: string
+          id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_name?: string | null
+          contact_name?: string | null
+          created_at?: string
+          id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string | null
+          contact_name?: string | null
+          created_at?: string
+          id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          ai_risk_score: number | null
+          company_name: string | null
+          coverage_per_subject: number | null
+          created_at: string
+          drug_type: string | null
+          duration_months: number | null
+          final_premium: number | null
+          id: string
+          indication: string | null
+          name: string
+          premium_max: number | null
+          premium_min: number | null
+          project_code: string | null
+          protocol_url: string | null
+          risk_factors: string[] | null
+          site_count: number | null
+          status: string | null
+          subject_count: number | null
+          trial_phase: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_risk_score?: number | null
+          company_name?: string | null
+          coverage_per_subject?: number | null
+          created_at?: string
+          drug_type?: string | null
+          duration_months?: number | null
+          final_premium?: number | null
+          id?: string
+          indication?: string | null
+          name: string
+          premium_max?: number | null
+          premium_min?: number | null
+          project_code?: string | null
+          protocol_url?: string | null
+          risk_factors?: string[] | null
+          site_count?: number | null
+          status?: string | null
+          subject_count?: number | null
+          trial_phase?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_risk_score?: number | null
+          company_name?: string | null
+          coverage_per_subject?: number | null
+          created_at?: string
+          drug_type?: string | null
+          duration_months?: number | null
+          final_premium?: number | null
+          id?: string
+          indication?: string | null
+          name?: string
+          premium_max?: number | null
+          premium_min?: number | null
+          project_code?: string | null
+          protocol_url?: string | null
+          risk_factors?: string[] | null
+          site_count?: number | null
+          status?: string | null
+          subject_count?: number | null
+          trial_phase?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "applicant" | "platform" | "underwriter"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +334,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["applicant", "platform", "underwriter"],
+    },
   },
 } as const

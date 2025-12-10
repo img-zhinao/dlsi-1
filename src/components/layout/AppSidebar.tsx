@@ -8,8 +8,11 @@ import {
   Home,
   ChevronLeft,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
 
 const navItems = [
@@ -23,6 +26,11 @@ const navItems = [
 export function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const { user, signOut } = useAuth();
+
+  const userInitial = user?.user_metadata?.contact_name?.[0] || user?.email?.[0]?.toUpperCase() || "U";
+  const userName = user?.user_metadata?.contact_name || "用户";
+  const companyName = user?.user_metadata?.company_name || "未设置公司";
 
   return (
     <aside
@@ -72,16 +80,33 @@ export function AppSidebar() {
 
       {/* User Section */}
       <div className="p-4 border-t border-sidebar-border">
-        {!collapsed && (
+        {!collapsed ? (
           <div className="flex items-center gap-3 px-2 animate-fade-in">
             <div className="w-10 h-10 rounded-full bg-sidebar-primary flex items-center justify-center">
-              <span className="text-sidebar-primary-foreground font-semibold">A</span>
+              <span className="text-sidebar-primary-foreground font-semibold">{userInitial}</span>
             </div>
-            <div>
-              <p className="text-sm font-medium">管理员</p>
-              <p className="text-xs text-sidebar-foreground/60">平台运营</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{userName}</p>
+              <p className="text-xs text-sidebar-foreground/60 truncate">{companyName}</p>
             </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+              onClick={signOut}
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
           </div>
+        ) : (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-full text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+            onClick={signOut}
+          >
+            <LogOut className="w-5 h-5" />
+          </Button>
         )}
       </div>
 
