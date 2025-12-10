@@ -1,1 +1,4 @@
 project_id = "efvjnvvlybtiqecbmhpb"
+
+[functions.analyze-protocol]
+verify_jwt = true
