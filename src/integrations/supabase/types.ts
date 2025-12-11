@@ -76,6 +76,33 @@ export type Database = {
           },
         ]
       }
+      inquiry_folders: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           company_name: string | null
@@ -112,6 +139,7 @@ export type Database = {
           drug_type: string | null
           duration_months: number | null
           final_premium: number | null
+          folder_id: string | null
           id: string
           indication: string | null
           name: string
@@ -135,6 +163,7 @@ export type Database = {
           drug_type?: string | null
           duration_months?: number | null
           final_premium?: number | null
+          folder_id?: string | null
           id?: string
           indication?: string | null
           name: string
@@ -158,6 +187,7 @@ export type Database = {
           drug_type?: string | null
           duration_months?: number | null
           final_premium?: number | null
+          folder_id?: string | null
           id?: string
           indication?: string | null
           name?: string
@@ -173,7 +203,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "projects_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "inquiry_folders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
