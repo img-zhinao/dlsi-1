@@ -1,30 +1,52 @@
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
-  MessageSquareText,
-  Shield,
-  FileCheck,
-  BarChart3,
   Home,
+  Building2,
+  Cpu,
+  Shield,
+  BarChart3,
+  BookOpen,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   LogOut,
+  GraduationCap,
+  FileText,
+  Database,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
 
-const navItems = [
-  { title: "概览", url: "/", icon: Home },
-  { title: "AI智能询价", url: "/quote", icon: MessageSquareText },
-  { title: "核保驾驶舱", url: "/underwriting", icon: Shield },
-  { title: "理赔中心", url: "/claims", icon: FileCheck },
-  { title: "监控大屏", url: "/dashboard", icon: BarChart3 },
+interface NavItem {
+  title: string;
+  url?: string;
+  icon: React.ElementType;
+  children?: NavItem[];
+}
+
+const navItems: NavItem[] = [
+  { title: "首页", url: "/", icon: Home },
+  { title: "投保人（药企/CRO）", url: "/quote", icon: Building2 },
+  { title: "平台（药保科技）", url: "/underwriting", icon: Cpu },
+  { title: "保险公司", url: "/claims", icon: Shield },
+  { title: "报表管理", url: "/dashboard", icon: BarChart3 },
+  {
+    title: "知识库管理",
+    icon: BookOpen,
+    children: [
+      { title: "专业知识管理", url: "/knowledge/professional", icon: GraduationCap },
+      { title: "保险条款管理", url: "/knowledge/terms", icon: FileText },
+      { title: "外部数据源管理", url: "/knowledge/datasources", icon: Database },
+    ],
+  },
 ];
 
 export function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState<string[]>(["知识库管理"]);
   const location = useLocation();
   const { user, signOut } = useAuth();
 
@@ -32,11 +54,79 @@ export function AppSidebar() {
   const userName = user?.user_metadata?.contact_name || "用户";
   const companyName = user?.user_metadata?.company_name || "未设置公司";
 
+  const toggleMenu = (title: string) => {
+    setExpandedMenus((prev) =>
+      prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title]
+    );
+  };
+
+  const isActive = (url?: string) => url && location.pathname === url;
+  const isChildActive = (item: NavItem) =>
+    item.children?.some((child) => location.pathname === child.url);
+
+  const renderNavItem = (item: NavItem, depth = 0) => {
+    const hasChildren = item.children && item.children.length > 0;
+    const isExpanded = expandedMenus.includes(item.title);
+    const active = isActive(item.url) || isChildActive(item);
+
+    if (hasChildren) {
+      return (
+        <li key={item.title}>
+          <button
+            onClick={() => toggleMenu(item.title)}
+            className={cn(
+              "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
+              "hover:bg-sidebar-accent text-sidebar-foreground/80",
+              active && "bg-sidebar-accent/50"
+            )}
+          >
+            <item.icon className="w-5 h-5 flex-shrink-0" />
+            {!collapsed && (
+              <>
+                <span className="flex-1 text-left text-sm">{item.title}</span>
+                <ChevronDown
+                  className={cn(
+                    "w-4 h-4 transition-transform duration-200",
+                    isExpanded && "rotate-180"
+                  )}
+                />
+              </>
+            )}
+          </button>
+          {!collapsed && isExpanded && (
+            <ul className="mt-1 ml-4 space-y-1 border-l border-sidebar-border pl-2">
+              {item.children!.map((child) => renderNavItem(child, depth + 1))}
+            </ul>
+          )}
+        </li>
+      );
+    }
+
+    return (
+      <li key={item.title}>
+        <NavLink
+          to={item.url!}
+          className={cn(
+            "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
+            "hover:bg-sidebar-accent",
+            depth > 0 ? "py-2 text-sm" : "",
+            isActive(item.url)
+              ? "bg-sidebar-primary text-sidebar-primary-foreground font-medium"
+              : "text-sidebar-foreground/80"
+          )}
+        >
+          <item.icon className={cn("w-5 h-5 flex-shrink-0", depth > 0 && "w-4 h-4")} />
+          {!collapsed && <span className="animate-fade-in">{item.title}</span>}
+        </NavLink>
+      </li>
+    );
+  };
+
   return (
     <aside
       className={cn(
         "h-screen bg-sidebar text-sidebar-foreground flex flex-col transition-all duration-300 ease-in-out relative",
-        collapsed ? "w-20" : "w-64"
+        collapsed ? "w-20" : "w-72"
       )}
     >
       {/* Logo */}
@@ -51,30 +141,9 @@ export function AppSidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4">
+      <nav className="flex-1 px-3 py-4 overflow-y-auto">
         <ul className="space-y-2">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.url;
-            return (
-              <li key={item.title}>
-                <NavLink
-                  to={item.url}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
-                    "hover:bg-sidebar-accent",
-                    isActive
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground font-medium"
-                      : "text-sidebar-foreground/80"
-                  )}
-                >
-                  <item.icon className={cn("w-5 h-5 flex-shrink-0", isActive && "text-sidebar-primary-foreground")} />
-                  {!collapsed && (
-                    <span className="animate-fade-in">{item.title}</span>
-                  )}
-                </NavLink>
-              </li>
-            );
-          })}
+          {navItems.map((item) => renderNavItem(item))}
         </ul>
       </nav>
 
