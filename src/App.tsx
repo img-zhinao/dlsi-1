@@ -10,6 +10,9 @@ import AIQuote from "./pages/AIQuote";
 import Underwriting from "./pages/Underwriting";
 import Claims from "./pages/Claims";
 import Dashboard from "./pages/Dashboard";
+import ProfessionalKnowledge from "./pages/knowledge/ProfessionalKnowledge";
+import InsuranceTerms from "./pages/knowledge/InsuranceTerms";
+import DataSources from "./pages/knowledge/DataSources";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
@@ -84,6 +87,36 @@ function AppRoutes() {
           <ProtectedRoute>
             <MainLayout>
               <Dashboard />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/knowledge/professional"
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <ProfessionalKnowledge />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/knowledge/terms"
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <InsuranceTerms />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/knowledge/datasources"
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <DataSources />
             </MainLayout>
           </ProtectedRoute>
         }
