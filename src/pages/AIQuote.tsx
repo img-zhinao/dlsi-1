@@ -85,6 +85,7 @@ export default function AIQuote() {
   const [inputValue, setInputValue] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisData, setAnalysisData] = useState<ExtractedData | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [folders, setFolders] = useState<InquiryFolder[]>([]);
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -109,6 +110,9 @@ export default function AIQuote() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Store the file for later saving
+    setUploadedFile(file);
 
     // Add user message showing file upload
     const uploadMessage: Message = {
@@ -233,7 +237,8 @@ export default function AIQuote() {
     try {
       const premium = calculatePremium(analysisData);
       
-      const { data, error } = await supabase
+      // Create project first
+      const { data: projectData, error: projectError } = await supabase
         .from("projects")
         .insert({
           user_id: user.id,
@@ -254,21 +259,58 @@ export default function AIQuote() {
         .select()
         .single();
 
-      if (error) throw error;
+      if (projectError) throw projectError;
+
+      // Upload file and create version record if file exists
+      if (uploadedFile && projectData) {
+        try {
+          const fileExt = uploadedFile.name.split(".").pop();
+          const filePath = `${projectData.id}/protocol/v1_${Date.now()}.${fileExt}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from("protocols")
+            .upload(filePath, uploadedFile);
+
+          if (!uploadError) {
+            const { data: urlData } = supabase.storage
+              .from("protocols")
+              .getPublicUrl(filePath);
+
+            // Create file version record
+            await supabase.from("file_versions").insert({
+              project_id: projectData.id,
+              file_type: "protocol",
+              file_name: uploadedFile.name,
+              file_url: urlData.publicUrl,
+              version_number: 1,
+              file_size: uploadedFile.size,
+              notes: "初始上传 - AI智能询价",
+              uploaded_by: user.id,
+            });
+          }
+        } catch (fileError) {
+          console.error("File upload error:", fileError);
+          // Don't fail the whole operation if file upload fails
+        }
+      }
 
       toast({
         title: "保存成功",
-        description: `项目编号: ${data.project_code}`,
+        description: `项目编号: ${projectData.project_code}`,
       });
 
       // Add confirmation message
       const saveMessage: Message = {
         id: Date.now().toString(),
         role: "assistant",
-        content: `项目已保存！编号: ${data.project_code}。您可以在"核保驾驶舱"中查看详情。`,
+        content: `项目已保存！编号: ${projectData.project_code}。方案文件已自动归档到文件版本管理中。您可以在"报价管理"中查看详情。`,
         type: "text",
       };
       setMessages((prev) => [...prev, saveMessage]);
+      
+      // Reset state for new inquiry
+      setUploadedFile(null);
+      setAnalysisData(null);
     } catch (error) {
       console.error("Save error:", error);
       toast({
