@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { Send, Upload, Bot, User, FileText, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Send, Upload, Bot, User, FileText, CheckCircle, AlertCircle, Loader2, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { FolderManager } from "@/components/quote/FolderManager";
 
 interface Message {
   id: string;
@@ -26,6 +27,14 @@ interface ExtractedData {
   risks: string[];
 }
 
+interface InquiryFolder {
+  id: string;
+  name: string;
+  description: string | null;
+  user_id: string;
+  created_at: string;
+}
+
 const initialMessages: Message[] = [
   {
     id: "1",
@@ -37,27 +46,21 @@ const initialMessages: Message[] = [
 
 // Simple text extraction from PDF (basic approach)
 async function extractTextFromFile(file: File): Promise<string> {
-  // For demo purposes, we'll read text files directly
-  // In production, you'd use a PDF parsing library or service
   if (file.type === "text/plain") {
     return await file.text();
   }
   
-  // For PDFs, we'll use a simplified approach - send the file name and type
-  // In production, integrate with a proper PDF parsing service
   return `临床试验方案文档: ${file.name}\n\n这是一个${file.type}类型的文件，大小为${(file.size / 1024).toFixed(1)}KB。\n\n为了演示AI分析功能，请假设这是一个II期非小细胞肺癌的靶向药物临床试验，计划入组200例受试者，在8个研究中心开展，预计持续24个月。该试验涉及肿瘤患者，需多次给药。`;
 }
 
 // Calculate premium based on risk factors
 function calculatePremium(data: ExtractedData): { min: number; max: number; riskScore: number } {
-  const baseRate = 800; // 基础单例费率
+  const baseRate = 800;
   let riskFactor = 1.0;
   
-  // Phase-based risk
   if (data.trialPhase?.includes("I")) riskFactor += 0.5;
   if (data.trialPhase?.includes("II")) riskFactor += 0.3;
   
-  // Risk factors
   const highRiskTerms = ["肿瘤", "癌", "CAR-T", "基因", "儿童", "未成年"];
   const mediumRiskTerms = ["老年", "多次给药", "注射"];
   
@@ -82,9 +85,26 @@ export default function AIQuote() {
   const [inputValue, setInputValue] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisData, setAnalysisData] = useState<ExtractedData | null>(null);
+  const [folders, setFolders] = useState<InquiryFolder[]>([]);
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  const fetchFolders = async () => {
+    const { data, error } = await supabase
+      .from("inquiry_folders")
+      .select("*")
+      .order("created_at", { ascending: false });
+    
+    if (!error && data) {
+      setFolders(data);
+    }
+  };
+
+  useEffect(() => {
+    fetchFolders();
+  }, []);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -229,6 +249,7 @@ export default function AIQuote() {
           premium_min: premium.min,
           premium_max: premium.max,
           status: "quoted",
+          folder_id: selectedFolderId,
         })
         .select()
         .single();
@@ -284,22 +305,42 @@ export default function AIQuote() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-b from-background to-muted/30">
-      {/* Header */}
-      <div className="p-6 border-b border-border bg-card/50 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center">
-            <Bot className="w-6 h-6 text-primary-foreground" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold">AI智能询价助手</h1>
-            <p className="text-sm text-muted-foreground">上传方案，智能分析，快速报价</p>
-          </div>
+    <div className="h-screen flex bg-gradient-to-b from-background to-muted/30">
+      {/* Folder Sidebar */}
+      <div className="w-64 border-r border-border bg-card/50 backdrop-blur-sm p-4 flex flex-col">
+        <div className="flex items-center gap-2 mb-4 pb-4 border-b border-border">
+          <FolderOpen className="w-5 h-5 text-primary" />
+          <h2 className="font-semibold">询价管理</h2>
         </div>
+        <FolderManager
+          folders={folders}
+          selectedFolderId={selectedFolderId}
+          onSelectFolder={setSelectedFolderId}
+          onFoldersChange={fetchFolders}
+        />
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-auto p-6 space-y-6">
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="p-6 border-b border-border bg-card/50 backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center">
+              <Bot className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold">AI智能询价助手</h1>
+              <p className="text-sm text-muted-foreground">
+                {selectedFolderId
+                  ? `当前文件夹: ${folders.find((f) => f.id === selectedFolderId)?.name || "未知"}`
+                  : "上传方案，智能分析，快速报价"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Messages */}
+        <div className="flex-1 overflow-auto p-6 space-y-6">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -471,6 +512,7 @@ export default function AIQuote() {
             </Button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
