@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Filter, Calendar, FileText, TrendingUp, Clock, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { Search, Filter, Calendar, FileText, TrendingUp, Clock, CheckCircle2, XCircle, AlertCircle, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,11 +18,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { zhCN } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { FileVersionManager } from "@/components/quote/FileVersionManager";
 
 interface Project {
   id: string;
@@ -46,6 +53,19 @@ interface InquiryFolder {
   name: string;
 }
 
+interface FileVersion {
+  id: string;
+  project_id: string;
+  file_type: string;
+  file_name: string;
+  file_url: string;
+  version_number: number;
+  file_size: number | null;
+  notes: string | null;
+  uploaded_by: string;
+  created_at: string;
+}
+
 const statusConfig: Record<string, { label: string; color: string; icon: React.ElementType }> = {
   pending: { label: "待处理", color: "bg-yellow-100 text-yellow-800", icon: Clock },
   quoted: { label: "已报价", color: "bg-blue-100 text-blue-800", icon: FileText },
@@ -58,6 +78,8 @@ export default function QuoteManagement() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [folders, setFolders] = useState<InquiryFolder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [fileVersions, setFileVersions] = useState<FileVersion[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [folderFilter, setFolderFilter] = useState<string>("all");
@@ -65,6 +87,12 @@ export default function QuoteManagement() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (selectedProject) {
+      fetchFileVersions(selectedProject.id);
+    }
+  }, [selectedProject]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -80,6 +108,18 @@ export default function QuoteManagement() {
       setFolders(foldersRes.data);
     }
     setLoading(false);
+  };
+
+  const fetchFileVersions = async (projectId: string) => {
+    const { data, error } = await supabase
+      .from("file_versions")
+      .select("*")
+      .eq("project_id", projectId)
+      .order("created_at", { ascending: false });
+
+    if (!error && data) {
+      setFileVersions(data);
+    }
   };
 
   const filteredProjects = projects.filter((project) => {
@@ -253,7 +293,11 @@ export default function QuoteManagement() {
                   const status = statusConfig[project.status || "pending"];
                   const StatusIcon = status?.icon || Clock;
                   return (
-                    <TableRow key={project.id} className="cursor-pointer hover:bg-muted/50">
+                    <TableRow
+                      key={project.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => setSelectedProject(project)}
+                    >
                       <TableCell className="font-mono text-sm">
                         {project.project_code || "-"}
                       </TableCell>
@@ -313,6 +357,73 @@ export default function QuoteManagement() {
           )}
         </CardContent>
       </Card>
+
+      {/* Project Detail Sheet */}
+      <Sheet open={!!selectedProject} onOpenChange={(open) => !open && setSelectedProject(null)}>
+        <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <Eye className="w-5 h-5" />
+              项目详情
+            </SheetTitle>
+          </SheetHeader>
+          {selectedProject && (
+            <div className="mt-6 space-y-6">
+              {/* Project Info */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">基本信息</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">项目编号</span>
+                    <span className="font-mono">{selectedProject.project_code || "-"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">项目名称</span>
+                    <span>{selectedProject.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">试验分期</span>
+                    <span>{selectedProject.trial_phase || "-"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">受试者人数</span>
+                    <span>{selectedProject.subject_count ? `${selectedProject.subject_count}例` : "-"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">适应症</span>
+                    <span>{selectedProject.indication || "-"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">药物类型</span>
+                    <span>{selectedProject.drug_type || "-"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">风险评分</span>
+                    <span className="font-bold">{selectedProject.ai_risk_score || "-"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">报价范围</span>
+                    <span className="font-bold text-primary">
+                      {selectedProject.premium_min && selectedProject.premium_max
+                        ? `${formatCurrency(selectedProject.premium_min)} - ${formatCurrency(selectedProject.premium_max)}`
+                        : "-"}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* File Version Manager */}
+              <FileVersionManager
+                projectId={selectedProject.id}
+                versions={fileVersions}
+                onVersionsChange={() => fetchFileVersions(selectedProject.id)}
+              />
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
