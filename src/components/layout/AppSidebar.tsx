@@ -29,7 +29,14 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { title: "首页", url: "/", icon: Home },
-  { title: "投保人（药企/CRO）", url: "/quote", icon: Building2 },
+  {
+    title: "投保人（药企/CRO）",
+    icon: Building2,
+    children: [
+      { title: "智能询价", url: "/quote", icon: Building2 },
+      { title: "报价管理", url: "/quote/management", icon: FileText },
+    ],
+  },
   { title: "平台（药保科技）", url: "/underwriting", icon: Cpu },
   { title: "保险公司", url: "/claims", icon: Shield },
   { title: "报表管理", url: "/dashboard", icon: BarChart3 },
@@ -46,7 +53,7 @@ const navItems: NavItem[] = [
 
 export function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
-  const [expandedMenus, setExpandedMenus] = useState<string[]>(["知识库管理"]);
+  const [expandedMenus, setExpandedMenus] = useState<string[]>(["知识库管理", "投保人（药企/CRO）"]);
   const location = useLocation();
   const { user, signOut } = useAuth();
 

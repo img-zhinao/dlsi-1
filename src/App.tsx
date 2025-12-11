@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { MainLayout } from "@/components/layout/MainLayout";
 import Overview from "./pages/Overview";
 import AIQuote from "./pages/AIQuote";
+import QuoteManagement from "./pages/QuoteManagement";
 import Underwriting from "./pages/Underwriting";
 import Claims from "./pages/Claims";
 import Dashboard from "./pages/Dashboard";
@@ -57,6 +58,16 @@ function AppRoutes() {
           <ProtectedRoute>
             <MainLayout>
               <AIQuote />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/quote/management"
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <QuoteManagement />
             </MainLayout>
           </ProtectedRoute>
         }
