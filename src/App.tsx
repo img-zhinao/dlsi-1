@@ -14,6 +14,7 @@ import Dashboard from "./pages/Dashboard";
 import ProfessionalKnowledge from "./pages/knowledge/ProfessionalKnowledge";
 import InsuranceTerms from "./pages/knowledge/InsuranceTerms";
 import DataSources from "./pages/knowledge/DataSources";
+import AnnotationPlatform from "./pages/AnnotationPlatform";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
@@ -129,6 +130,14 @@ function AppRoutes() {
             <MainLayout>
               <DataSources />
             </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/knowledge/annotation"
+        element={
+          <ProtectedRoute>
+            <AnnotationPlatform />
           </ProtectedRoute>
         }
       />

@@ -14,6 +14,7 @@ import {
   GraduationCap,
   FileText,
   Database,
+  Tag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -47,6 +48,7 @@ const navItems: NavItem[] = [
       { title: "专业知识管理", url: "/knowledge/professional", icon: GraduationCap },
       { title: "保险条款管理", url: "/knowledge/terms", icon: FileText },
       { title: "外部数据源管理", url: "/knowledge/datasources", icon: Database },
+      { title: "数据标注平台", url: "/knowledge/annotation", icon: Tag },
     ],
   },
 ];
