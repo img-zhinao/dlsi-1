@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          message_type: string | null
+          metadata: Json | null
+          project_id: string | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          message_type?: string | null
+          metadata?: Json | null
+          project_id?: string | null
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          message_type?: string | null
+          metadata?: Json | null
+          project_id?: string | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       claims: {
         Row: {
           approved_amount: number | null
@@ -123,6 +164,56 @@ export type Database = {
           },
         ]
       }
+      inquiry_applications: {
+        Row: {
+          coverage_requirements: Json | null
+          created_at: string
+          id: string
+          pdf_url: string | null
+          project_id: string | null
+          special_notes: string | null
+          sponsor_info: Json | null
+          status: string
+          trial_info: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          coverage_requirements?: Json | null
+          created_at?: string
+          id?: string
+          pdf_url?: string | null
+          project_id?: string | null
+          special_notes?: string | null
+          sponsor_info?: Json | null
+          status?: string
+          trial_info?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          coverage_requirements?: Json | null
+          created_at?: string
+          id?: string
+          pdf_url?: string | null
+          project_id?: string | null
+          special_notes?: string | null
+          sponsor_info?: Json | null
+          status?: string
+          trial_info?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inquiry_applications_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inquiry_folders: {
         Row: {
           created_at: string
@@ -149,6 +240,59 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      insurance_applications: {
+        Row: {
+          applicant_info: Json | null
+          approved_at: string | null
+          coverage_details: Json | null
+          created_at: string
+          id: string
+          insured_info: Json | null
+          project_id: string | null
+          signature_url: string | null
+          status: string
+          submitted_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          applicant_info?: Json | null
+          approved_at?: string | null
+          coverage_details?: Json | null
+          created_at?: string
+          id?: string
+          insured_info?: Json | null
+          project_id?: string | null
+          signature_url?: string | null
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          applicant_info?: Json | null
+          approved_at?: string | null
+          coverage_details?: Json | null
+          created_at?: string
+          id?: string
+          insured_info?: Json | null
+          project_id?: string | null
+          signature_url?: string | null
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_applications_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

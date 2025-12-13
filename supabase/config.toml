@@ -2,3 +2,12 @@ project_id = "efvjnvvlybtiqecbmhpb"
 
 [functions.analyze-protocol]
 verify_jwt = true
+
+[functions.insurance-qa]
+verify_jwt = true
+
+[functions.generate-inquiry-doc]
+verify_jwt = true
+
+[functions.generate-application-doc]
+verify_jwt = true
