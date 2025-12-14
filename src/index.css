@@ -33,6 +33,9 @@
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
 
+    --autofill: 142 50% 95%;
+    --autofill-border: 142 50% 75%;
+
     --border: 220 13% 91%;
     --input: 220 13% 91%;
     --ring: 220 56% 45%;
@@ -85,6 +88,9 @@
 
     --success: 142 76% 40%;
     --success-foreground: 0 0% 100%;
+
+    --autofill: 142 40% 20%;
+    --autofill-border: 142 40% 40%;
 
     --border: 220 30% 20%;
     --input: 220 30% 20%;
